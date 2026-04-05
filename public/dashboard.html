@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Physics Atelier - IGCSE Past Paper Solutions</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="text-on-surface">
+    <!-- SideNavBar (Unified) -->
+    <aside
+        class="bg-[#f1f4f6] dark:bg-[#1a1f24] font-manrope tracking-tight leading-relaxed h-screen w-64 fixed left-0 top-0 overflow-y-auto z-50 hidden lg:flex flex-col py-12 border-r border-surface-container-highest/20">
+        <div class="px-8 mb-12">
+            <h1 class="text-xl font-light tracking-[0.2em] uppercase text-[#2b3437] dark:text-[#f8f9fa]">Atelier</h1>
+            <p class="text-xs text-on-surface-variant tracking-widest mt-1 opacity-70">Physics Hub</p>
+        </div>
+        <nav class="flex-1 flex flex-col gap-1 px-2">
+            <a class="flex items-center gap-4 px-6 py-4 text-[#586064] dark:text-[#abb3b7] hover:bg-[#ffffff]/50 dark:hover:bg-[#2b3437]/50 transition-all duration-300 scale-100 active:scale-[0.99] rounded-xl"
+                href="dashboard.html">
+                <span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+                <span class="text-sm font-medium">Dashboard</span>
+            </a>
+            <a class="flex items-center gap-4 px-6 py-4 text-[#586064] dark:text-[#abb3b7] hover:bg-[#ffffff]/50 dark:hover:bg-[#2b3437]/50 transition-all duration-300 scale-100 active:scale-[0.99] rounded-xl"
+                href="video_lessons.html">
+                <span class="material-symbols-outlined" data-icon="school">school</span>
+                <span class="text-sm font-medium">Video Lessons</span>
+            </a>
+            <a class="flex items-center gap-4 px-6 py-4 text-[#586064] dark:text-[#abb3b7] hover:bg-[#ffffff]/50 dark:hover:bg-[#2b3437]/50 transition-all duration-300 scale-100 active:scale-[0.99] rounded-xl"
+                href="past_papers.html">
+                <span class="material-symbols-outlined" data-icon="archive">archive</span>
+                <span class="text-sm font-medium">Past Papers</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- TopAppBar -->
+    <header
+        class="fixed top-0 right-0 w-full lg:w-[calc(100%-16rem)] h-20 z-40 bg-[#f8f9fa]/80 dark:bg-[#0d1117]/80 backdrop-blur-xl flex justify-between items-center px-6 lg:px-12 border-b border-surface-container-highest/10">
+        <div class="flex items-center gap-4 lg:gap-8">
+            <span class="font-manrope font-medium text-[0.7rem] lg:text-sm text-[#586064] dark:text-[#abb3b7] opacity-60 uppercase tracking-widest hidden sm:inline">Edexcel IGCSE
+                Physics</span>
+            <div class="lg:hidden">
+                <h1 class="text-lg font-light tracking-[0.2em] uppercase text-on-surface">Atelier</h1>
+            </div>
+        </div>
+        <div class="flex items-center gap-3 lg:gap-6" id="header-actions">
+        </div>
+    </header>
+
+    <!-- Main Content Canvas -->
+    <main class="ml-0 lg:ml-64 pt-24 min-h-screen px-4 lg:px-12 pb-24">
+        <!-- Hero Section: Account Greeting & Latest Activity -->
+        <section class="mb-10 lg:mb-20">
+            <div class="mb-8 lg:mb-12">
+                <h2 id="user-greeting" class="text-4xl lg:text-6xl font-bold tracking-tight text-on-surface mb-2">Hi!</h2>
+                <div class="flex flex-col">
+                    <p class="font-manrope font-medium text-[0.7rem] lg:text-sm text-on-surface-variant opacity-60 uppercase tracking-[0.3em]">Latest Paper Walk-through</p>
+                    <div class="h-0.5 w-12 bg-primary mt-4 opacity-30"></div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-12 gap-8 items-start">
+                <!-- Large Card: Resume Last Session -->
+                <div class="col-span-12 lg:col-span-8">
+                    <div id="hero-latest" class="relative bg-surface-container rounded-[2rem] overflow-hidden group shadow-xl border border-outline/10 min-h-[400px] flex items-center justify-center cursor-pointer transition-all hover:border-primary/20">
+                        <div class="flex flex-col items-center justify-center text-center p-12">
+                            <span class="material-symbols-outlined text-5xl text-primary animate-spin mb-4">refresh</span>
+                            <h3 class="text-2xl font-bold text-on-surface tracking-tight mb-2">Resuming Session...</h3>
+                            <p class="text-sm text-on-surface-variant max-w-sm">Please wait while we synchronize your watch history and progress indicators.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Info Cards -->
+                <div class="col-span-12 lg:col-span-4 space-y-8">
+                    <div class="bg-surface-container-low p-8 rounded-xl border border-surface-container-highest/10">
+                        <section>
+                            <h4 class="text-[0.65rem] font-bold tracking-[0.2em] uppercase text-on-surface-variant opacity-60 mb-6">Revision Progress</h4>
+                            <div class="flex items-center justify-center py-8">
+                                <span class="material-symbols-outlined text-4xl text-primary/30 animate-pulse">monitoring</span>
+                            </div>
+                        </section>
+                    </div>
+                    
+                    <div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-surface-container-highest/10 hover:border-primary/20 transition-all cursor-pointer">
+                        <h4 class="text-[0.65rem] font-bold tracking-[0.2em] uppercase text-on-surface-variant mb-6">Upcoming Exams</h4>
+                        <div class="flex items-center gap-4">
+                            <div class="flex flex-col">
+                                <h5 class="text-xl font-bold text-primary">June 2025</h5>
+                                <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-widest opacity-60">Syllabus Cycle 4</p>
+                            </div>
+                            <span class="ml-auto material-symbols-outlined text-primary/40">calendar_month</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Watch History -->
+        <section class="max-w-[1400px]">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl font-bold tracking-tight text-on-surface">Recent Watch History</h2>
+                <a href="video_lessons.html" class="text-xs font-bold uppercase tracking-widest text-primary hover:underline">Explore All Library</a>
+            </div>
+            
+            <div id="history-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Data-injected by script.js -->
+                <div class="flex flex-col items-center justify-center p-12 bg-surface-container-low rounded-xl border border-dashed border-outline/30 min-h-[200px]">
+                    <span class="material-symbols-outlined text-3xl text-on-surface-variant opacity-20 mb-3">history</span>
+                    <p class="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface-variant opacity-40">Loading history...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

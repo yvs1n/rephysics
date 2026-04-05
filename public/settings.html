@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Atelier | Settings</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-surface-container-lowest text-on-surface h-screen flex flex-col items-center">
+    
+    <!-- TopAppBar -->
+    <header class="w-full h-20 bg-surface-container-low flex justify-start items-center px-6 lg:px-12 mb-8 lg:mb-16 shadow-sm border-b border-surface-container-highest/10">
+        <a href="dashboard.html" class="flex items-center gap-3 lg:gap-4 text-on-surface-variant hover:text-primary transition-colors hover:bg-surface-container/50 px-3 lg:px-4 py-2 rounded-xl">
+            <span class="material-symbols-outlined font-bold text-sm lg:text-base">arrow_back</span>
+            <span class="font-bold tracking-widest uppercase text-[0.65rem] lg:text-xs">Back to Dashboard</span>
+        </a>
+    </header>
+
+    <div class="mb-8 lg:mb-12 text-center px-6">
+        <h1 class="text-2xl lg:text-3xl font-light tracking-[0.2em] uppercase text-[#2b3437]">Account Settings</h1>
+        <p class="text-[0.65rem] lg:text-xs text-on-surface-variant tracking-widest mt-2 uppercase opacity-70">Customize Your Workspace</p>
+    </div>
+
+    <form id="settings-form" class="bg-[#f1f4f6] p-6 lg:p-10 rounded-2xl shadow-sm border border-surface-container-highest/20 w-[calc(100%-3rem)] sm:w-[26rem] flex flex-col gap-6 mb-12">
+        
+        <div class="flex flex-col gap-2 opacity-60">
+            <label class="text-xs lg:text-sm font-semibold uppercase tracking-wider text-on-surface-variant flex gap-2"><span class="material-symbols-outlined text-sm">mail</span> Email (Read-Only)</label>
+            <input type="text" id="email_display" disabled class="rounded-xl border-surface-variant bg-surface-container-highest p-3 cursor-not-allowed">
+        </div>
+
+        <div class="flex flex-col gap-2">
+            <label class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant flex gap-2"><span class="material-symbols-outlined text-sm">person</span> Display Name</label>
+            <input type="text" id="display_name" placeholder="Leave blank to keep current" class="rounded-xl border-surface-variant bg-surface p-3 placeholder:opacity-50 focus:ring-primary focus:border-primary">
+        </div>
+
+        <div class="flex flex-col gap-2">
+            <label class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant flex gap-2"><span class="material-symbols-outlined text-sm">lock</span> New Password</label>
+            <input type="password" id="password" placeholder="Leave blank to keep current" class="rounded-xl border-surface-variant bg-surface p-3 placeholder:opacity-50 focus:ring-primary focus:border-primary">
+        </div>
+
+        <button type="submit" id="save-btn" class="mt-4 bg-primary text-on-primary py-4 rounded-xl font-bold uppercase tracking-widest hover:opacity-90 transition-opacity">Save Changes</button>
+    </form>
+
+</body>
+</html>

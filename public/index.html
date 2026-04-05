@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Atelier | Login</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-surface-container-lowest text-on-surface h-screen flex flex-col justify-center items-center">
+    
+    <div class="mb-12 text-center">
+        <h1 class="text-3xl font-light tracking-[0.2em] uppercase text-[#2b3437]">Atelier</h1>
+        <p class="text-xs text-on-surface-variant tracking-widest mt-2 uppercase opacity-70">Physics Portal Access</p>
+    </div>
+
+    <form id="loginForm" class="bg-[#f1f4f6] p-10 rounded-2xl shadow-sm border border-surface-container-highest/20 w-96 flex flex-col gap-6">
+        <div id="errorBox" class="hidden bg-error-container text-on-error-container p-3 rounded-lg text-sm text-center"></div>
+
+        <div class="flex flex-col gap-2">
+            <label class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant">Email</label>
+            <input type="email" id="email" class="rounded-xl border-surface-variant bg-surface p-3 focus:ring-primary focus:border-primary" placeholder="student@gmail.com" required>
+        </div>
+
+        <div class="flex flex-col gap-2">
+            <label class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant">Password</label>
+            <input type="password" id="password" class="rounded-xl border-surface-variant bg-surface p-3 focus:ring-primary focus:border-primary" required>
+        </div>
+
+        <button type="submit" class="mt-4 bg-primary text-on-primary py-4 rounded-xl font-bold uppercase tracking-widest hover:opacity-90 transition-opacity">Login</button>
+    </form>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorBox = document.getElementById('errorBox');
+            errorBox.classList.add('hidden');
+
+            const payload = {
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            };
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    window.location.href = '/dashboard.html';
+                } else {
+                    errorBox.textContent = data.error;
+                    errorBox.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorBox.textContent = "Server connection failed.";
+                errorBox.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
