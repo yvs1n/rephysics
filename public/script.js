@@ -97,6 +97,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         s.appendChild(watermark);
     });
 
+    // Highlight Active Sidebar Links
+    const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+    const allLinks = document.querySelectorAll('aside nav a, #mobile-nav-overlay nav a');
+    allLinks.forEach(link => {
+        const linkPath = link.getAttribute('href');
+        if (linkPath === currentPath) {
+            link.classList.add('bg-primary/10', 'text-primary', 'font-bold');
+            link.classList.remove('text-[#586064]', 'text-on-surface-variant');
+            const icon = link.querySelector('.material-symbols-outlined');
+            if (icon) icon.style.fontVariationSettings = "'FILL' 1";
+        }
+    });
+
     // Mobile Navigation & Header Fixes
     const headerActions = document.getElementById('header-actions');
     const headerLeft = document.querySelector('header div.flex.items-center.gap-4');
@@ -162,9 +175,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Profile Dropdown logic
     if (headerActions) {
-        // Global Search (only if not dashboard)
-        if (!path.includes('dashboard.html')) {
-             // ... search injection simplified for now to avoid errors ...
+        // 1. Search Bar Restoration
+        if (!path.includes('dashboard.html') && !path.endsWith('/') && !path.endsWith('index.html')) {
+            const searchDiv = document.createElement('div');
+            searchDiv.className = "relative group hidden md:block mr-2";
+            searchDiv.innerHTML = `
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant opacity-40 group-focus-within:text-primary group-focus-within:opacity-100 transition-all text-xl">search</span>
+                <input id="global-search" type="text" placeholder="Search papers..." class="w-64 lg:w-96 bg-surface-container border-none focus:ring-2 focus:ring-primary/20 rounded-full py-2.5 pl-11 pr-4 text-xs font-bold transition-all"/>
+            `;
+            headerActions.appendChild(searchDiv);
+            
+            // Search Logic
+            const searchInput = document.getElementById('global-search');
+            searchInput && searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                const cards = document.querySelectorAll('article, .bg-surface-container-lowest.p-6');
+                cards.forEach(card => {
+                    const txt = card.innerText.toLowerCase();
+                    card.style.display = txt.includes(term) ? '' : 'none';
+                });
+            });
         }
 
         const profileBtn = document.createElement('div');
@@ -175,7 +205,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
             <div class="hidden sm:flex flex-col text-left">
                 <span class="text-xs font-bold text-on-surface group-hover:text-primary transition-colors">Student</span>
-                <span class="text-[0.6rem] font-bold text-on-surface-variant uppercase tracking-widest opacity-60">Gold Member</span>
+                <span class="text-[0.6rem] font-bold text-on-surface-variant uppercase tracking-widest opacity-60">Student</span>
             </div>
             <!-- Dropdown Menu -->
             <div class="absolute right-0 top-full mt-2 w-48 bg-surface-container-lowest rounded-xl shadow-xl border border-surface-container-highest/20 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all z-[60] overflow-hidden">
