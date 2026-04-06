@@ -1,5 +1,5 @@
 const { Pool } = require('pg');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 // In production (Render), DATABASE_URL is an environment variable.
 // Locally, we use the Neon URL you provided.
