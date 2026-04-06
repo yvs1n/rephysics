@@ -45,12 +45,15 @@
 <!-- Main Content Canvas -->
 <main class="ml-0 lg:ml-64 pt-20 min-h-screen bg-background">
 <div class="max-w-6xl mx-auto px-6 lg:px-12 py-12 lg:py-16">
-<!-- Hero Video Player Section -->
-<section class="mb-12 lg:mb-20">
-<div id="player-wrapper" class="relative aspect-video rounded-3xl lg:rounded-[2rem] overflow-hidden bg-[#0d1117] shadow-xl flex items-center justify-center">
-    <span class="material-symbols-outlined text-surface-container-low/20 text-6xl animate-pulse">schedule</span>
-</div>
-</section>
+                <!-- Hero Video Player Section -->
+                <section class="mb-12 lg:mb-20">
+                    <div id="player-wrapper" class="relative aspect-video rounded-3xl lg:rounded-[2rem] overflow-hidden bg-[#0d1117] shadow-xl flex items-center justify-center">
+                        <video id="main-video" class="w-full h-full" controls crossorigin="anonymous" playsinline></video>
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <span id="time-duration" class="text-[0.65rem] font-bold tracking-widest text-on-surface-variant uppercase bg-surface-container px-3 py-1 rounded-full">0:00</span>
+                    </div>
+                </section>
 <!-- Lesson Details Grid -->
 <div class="grid grid-cols-12 gap-8 lg:gap-12 items-start">
 <!-- Left Content -->

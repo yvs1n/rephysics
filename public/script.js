@@ -443,6 +443,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         if (paper) {
             const timeDisplay = document.getElementById('time-duration');
+            const titleEle = document.getElementById('lesson-title');
+            const seriesEle = document.getElementById('top-subtitle');
+
+            if (titleEle) titleEle.textContent = paper.title;
+            if (seriesEle) seriesEle.textContent = paper.series;
+
             video.addEventListener('loadedmetadata', () => {
                 if (video.duration) {
                     if (timeDisplay) timeDisplay.textContent = formatMins(video.duration);
