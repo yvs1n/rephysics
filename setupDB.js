@@ -95,10 +95,7 @@ async function setup() {
         ];
 
         const videoPool = [
-            "https://www.w3schools.com/html/mov_bbb.mp4",
-            "https://www.w3schools.com/html/movie.mp4",
-            "https://www.w3schools.com/html/mov_bbb.mp4",
-            "https://www.w3schools.com/html/movie.mp4"
+            "/video.mp4"
         ];
 
         const mnthMap = { "Jan": "01", "June": "06", "Oct": "10" };

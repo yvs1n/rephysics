@@ -175,32 +175,51 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Profile Dropdown logic
     if (headerActions) {
-        // 1. Search Bar Restoration
+        // 1. Search Bar Restoration with Mobile Support
         if (!path.includes('dashboard.html') && !path.endsWith('/') && !path.endsWith('index.html')) {
-            const searchDiv = document.createElement('div');
-            searchDiv.className = "relative group hidden md:block mr-2";
-            searchDiv.innerHTML = `
-                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant opacity-40 group-focus-within:text-primary group-focus-within:opacity-100 transition-all text-xl">search</span>
-                <input id="global-search" type="text" placeholder="Search papers..." class="w-64 lg:w-96 bg-surface-container border-none focus:ring-2 focus:ring-primary/20 rounded-full py-2.5 pl-11 pr-4 text-xs font-bold transition-all"/>
+            const searchContainer = document.createElement('div');
+            searchContainer.className = "flex items-center gap-2 mr-2";
+            searchContainer.innerHTML = `
+                <!-- Mobile Search Icon -->
+                <button id="mobile-search-toggle" class="md:hidden flex items-center justify-center w-10 h-10 text-on-surface hover:bg-surface-container-high rounded-full transition-colors">
+                    <span class="material-symbols-outlined">search</span>
+                </button>
+                
+                <!-- Search Input Container -->
+                <div id="search-input-wrapper" class="hidden md:flex relative group items-center">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant opacity-40 group-focus-within:text-primary group-focus-within:opacity-100 transition-all text-xl">search</span>
+                    <input id="global-search" type="text" placeholder="Search papers..." class="w-full md:w-64 lg:w-96 bg-surface-container border-none focus:ring-2 focus:ring-primary/20 rounded-full py-2.5 pl-11 pr-4 text-xs font-bold transition-all shadow-inner"/>
+                    <!-- Mobile Close Search (only if hidden toggle is used) -->
+                    <button id="mobile-search-close" class="md:hidden ml-2 text-on-surface-variant hover:text-error transition-colors">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
             `;
-            headerActions.appendChild(searchDiv);
+            headerActions.prepend(searchContainer);
+            
+            const searchWrapper = document.getElementById('search-input-wrapper');
+            const searchToggle = document.getElementById('mobile-search-toggle');
+            const searchClose = document.getElementById('mobile-search-close');
+            
+            searchToggle && searchToggle.addEventListener('click', () => {
+                searchWrapper.classList.remove('hidden');
+                searchWrapper.classList.add('fixed', 'inset-0', 'z-[80]', 'bg-surface-container-lowest', 'px-6', 'flex', 'items-center', 'animate-in', 'fade-in', 'duration-300');
+                document.getElementById('global-search').focus();
+            });
+            
+            searchClose && searchClose.addEventListener('click', () => {
+                searchWrapper.classList.add('hidden');
+                searchWrapper.classList.remove('fixed', 'inset-0', 'z-[80]', 'bg-surface-container-lowest', 'px-6', 'flex', 'items-center');
+            });
             
             // Search Logic
             const searchInput = document.getElementById('global-search');
             searchInput && searchInput.addEventListener('input', (e) => {
                 const term = e.target.value.toLowerCase();
                 const cards = document.querySelectorAll('article, .bg-surface-container-lowest.p-6');
-                
-                cards.forEach(card => {
-                    const txt = card.innerText.toLowerCase();
-                    card.style.display = txt.includes(term) ? '' : 'none';
-                });
-
-                // Hide empty sections (for Past Papers page)
+                cards.forEach(card => card.style.display = card.innerText.toLowerCase().includes(term) ? '' : 'none');
                 document.querySelectorAll('#papers-list section').forEach(section => {
-                    const visibleCards = section.querySelectorAll('.bg-surface-container-lowest.p-6[style="display: \'\';"], .bg-surface-container-lowest.p-6:not([style*="display: none"])');
-                    const hasVisible = Array.from(section.querySelectorAll('.bg-surface-container-lowest.p-6')).some(c => c.style.display !== 'none');
-                    section.style.display = hasVisible ? '' : 'none';
+                    section.style.display = Array.from(section.querySelectorAll('.bg-surface-container-lowest.p-6')).some(c => c.style.display !== 'none') ? '' : 'none';
                 });
             });
         }
