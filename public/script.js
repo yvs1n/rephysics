@@ -23,12 +23,12 @@ tailwind.config = {
                 "on-tertiary-container": "#4a4a65",
                 "surface-container-high": "#e3e9ec",
                 "on-error-container": "#752121",
-                "primary-dim": "#39537c",
-                "primary-container": "#d6e3ff",
+                "primary-dim": "var(--primary-dim)",
+                "primary-container": "var(--primary-container)",
                 "surface-tint": "#455f88",
                 "surface-dim": "#d1dce0",
-                "on-primary-container": "#38527b",
-                "primary": "#455f88",
+                "on-primary-container": "var(--on-primary-container)",
+                "primary": "var(--primary)",
                 "on-secondary-fixed": "#3d3f45",
                 "on-surface": "#2b3437",
                 "error": "#9f403d",
@@ -53,7 +53,7 @@ tailwind.config = {
                 "tertiary-fixed": "#d9d7f8",
                 "on-error": "#fff7f6",
                 "inverse-on-surface": "#9b9d9e",
-                "on-primary": "#f6f7ff"
+                "on-primary": "var(--on-primary)"
             },
             "borderRadius": {
                 "DEFAULT": "0.125rem",
@@ -136,7 +136,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (path !== '/' && !path.endsWith('index.html')) {
         try {
             const res = await fetch('/api/me');
-            if (res.ok) { globalUser = await res.json(); }
+            if (res.ok) { 
+                globalUser = await res.json(); 
+                window.globalUser = globalUser;
+                // Set subject theme
+                if (globalUser.activeSubject) {
+                    document.body.setAttribute('data-subject', globalUser.activeSubject);
+                }
+            }
         } catch (e) { console.warn('Could not load user profile'); }
     }
 
@@ -174,61 +181,91 @@ document.addEventListener('DOMContentLoaded', async () => {
         headerLeft.prepend(hamburger);
     }
 
-    // Mobile Nav Overlay
-    const mobileOverlay = document.createElement('div');
-    mobileOverlay.id = 'mobile-nav-overlay';
-    mobileOverlay.className = 'fixed inset-0 bg-surface-container-lowest z-[100] flex flex-col p-8 transition-all duration-500 translate-x-full opacity-0 invisible';
-    mobileOverlay.innerHTML = `
-        <div class="flex justify-between items-center mb-12">
-            <h2 class="text-2xl font-light tracking-[0.2em] uppercase text-on-surface">Atelier</h2>
-            <button id="mobile-menu-close" class="w-12 h-12 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high transition-colors">
-                <span class="material-symbols-outlined text-3xl">close</span>
-            </button>
-        </div>
-        <nav class="flex flex-col gap-4">
-            <a href="dashboard.html" class="mobile-nav-link flex items-center gap-6 p-6 rounded-2xl text-xl font-bold tracking-tight text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-all">
-                <span class="material-symbols-outlined text-3xl">dashboard</span> Dashboard
-            </a>
-            <a href="video_lessons.html" class="mobile-nav-link flex items-center gap-6 p-6 rounded-2xl text-xl font-bold tracking-tight text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-all">
-                <span class="material-symbols-outlined text-3xl">subscriptions</span> Video Lessons
-            </a>
-            <a href="past_papers.html" class="mobile-nav-link flex items-center gap-6 p-6 rounded-2xl text-xl font-bold tracking-tight text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-all">
-                <span class="material-symbols-outlined text-3xl">folder_open</span> Past Papers
-            </a>
-            ${(window.globalUser && window.globalUser.role === 'admin') ? `
-            <a href="admin.html" class="mobile-nav-link flex items-center gap-6 p-6 rounded-2xl text-xl font-bold tracking-tight text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-all">
-                <span class="material-symbols-outlined text-3xl">admin_panel_settings</span> Command Center
-            </a>
-            ` : ''}
-            <a href="settings.html" class="mobile-nav-link flex items-center gap-6 p-6 rounded-2xl text-xl font-bold tracking-tight text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-all">
-                <span class="material-symbols-outlined text-3xl">settings</span> Settings
-            </a>
-        </nav>
-        <div class="mt-auto pt-8 border-t border-surface-container-highest/30">
-            <button id="btn-logout-mobile" class="w-full p-6 flex items-center gap-6 rounded-2xl text-xl font-bold text-error hover:bg-error/5 transition-all text-left">
-                <span class="material-symbols-outlined text-3xl">logout</span> Sign Out
-            </button>
-            <p class="text-center text-[0.65rem] font-bold tracking-[0.2em] text-on-surface-variant uppercase mt-12 opacity-50">Made by Yassin Ragab</p>
-        </div>
-    `;
-    document.body.appendChild(mobileOverlay);
+    const initMobileNav = () => {
+        // Clean up existing overlay if any
+        document.getElementById('mobile-nav-overlay')?.remove();
 
-    const toggleBtn = document.getElementById('mobile-menu-toggle');
-    const closeBtn = document.getElementById('mobile-menu-close');
-    const logoutMobile = document.getElementById('btn-logout-mobile');
+        // Mobile Nav Overlay
+        const mobileOverlay = document.createElement('div');
+        mobileOverlay.id = 'mobile-nav-overlay';
+        mobileOverlay.className = 'fixed inset-0 bg-surface-container-lowest z-[100] flex flex-col p-8 transition-all duration-500 translate-x-full opacity-0 invisible';
+        const subLabel = globalUser?.activeSubject ? `<p class="text-[0.6rem] text-primary tracking-widest mt-1 font-bold opacity-80">${globalUser.activeSubject} Course</p>` : `<p class="text-xs text-on-surface-variant tracking-widest mt-1 opacity-70">Learning Portal</p>`;
 
-    toggleBtn && toggleBtn.addEventListener('click', () => {
-        mobileOverlay.classList.remove('translate-x-full', 'opacity-0', 'invisible');
-        document.body.style.overflow = 'hidden';
-    });
-    closeBtn && closeBtn.addEventListener('click', () => {
-        mobileOverlay.classList.add('translate-x-full', 'opacity-0', 'invisible');
-        document.body.style.overflow = '';
-    });
-    logoutMobile && logoutMobile.addEventListener('click', async () => {
-        await fetch('/api/logout', { method: 'POST' });
-        window.location.href = '/index.html';
-    });
+        mobileOverlay.innerHTML = `
+            <div class="flex justify-between items-center mb-12">
+                <div>
+                    <h2 class="text-2xl font-light tracking-[0.2em] uppercase text-on-surface">Elementa</h2>
+                    ${subLabel}
+                </div>
+                <button id="mobile-menu-close" class="w-12 h-12 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high transition-colors">
+                    <span class="material-symbols-outlined text-3xl">close</span>
+                </button>
+            </div>
+            <nav class="flex flex-col gap-4">
+                <a href="dashboard.html" class="mobile-nav-link flex items-center gap-6 p-6 rounded-2xl text-xl font-bold tracking-tight text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-all">
+                    <span class="material-symbols-outlined text-3xl">dashboard</span> Dashboard
+                </a>
+                <a href="video_lessons.html" class="mobile-nav-link flex items-center gap-6 p-6 rounded-2xl text-xl font-bold tracking-tight text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-all">
+                    <span class="material-symbols-outlined text-3xl">subscriptions</span> Video Lessons
+                </a>
+                <a href="past_papers.html" class="mobile-nav-link flex items-center gap-6 p-6 rounded-2xl text-xl font-bold tracking-tight text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-all">
+                    <span class="material-symbols-outlined text-3xl">folder_open</span> Past Papers
+                </a>
+                ${(globalUser && globalUser.role === 'admin') ? `
+                <a href="admin.html" class="mobile-nav-link flex items-center gap-6 p-6 rounded-2xl text-xl font-bold tracking-tight text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-all">
+                    <span class="material-symbols-outlined text-3xl">admin_panel_settings</span> Command Center
+                </a>
+                ` : ''}
+                ${(globalUser && globalUser.subjects?.length > 1) ? `
+                <button id="switch-subject-mobile" class="mobile-nav-link flex items-center gap-6 p-6 rounded-2xl text-xl font-bold tracking-tight text-primary bg-primary/5 hover:bg-primary/10 transition-all text-left">
+                    <span class="material-symbols-outlined text-3xl">swap_horiz</span> Switch Subject
+                </button>
+                ` : ''}
+                <a href="settings.html" class="mobile-nav-link flex items-center gap-6 p-6 rounded-2xl text-xl font-bold tracking-tight text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-all">
+                    <span class="material-symbols-outlined text-3xl">settings</span> Settings
+                </a>
+            </nav>
+            <div class="mt-auto pt-8 border-t border-surface-container-highest/30">
+                <button id="btn-logout-mobile" class="w-full p-6 flex items-center gap-6 rounded-2xl text-xl font-bold text-error hover:bg-error/5 transition-all text-left">
+                    <span class="material-symbols-outlined text-3xl">logout</span> Sign Out
+                </button>
+                <p class="text-center text-[0.65rem] font-bold tracking-[0.2em] text-on-surface-variant uppercase mt-12 opacity-50">Made by Yassin Ragab</p>
+            </div>
+        `;
+        document.body.appendChild(mobileOverlay);
+
+        const toggleBtn = document.getElementById('mobile-menu-toggle');
+        const closeBtn = document.getElementById('mobile-menu-close');
+        const logoutMobile = document.getElementById('btn-logout-mobile');
+        const switchSubjectMobile = document.getElementById('switch-subject-mobile');
+
+        toggleBtn && toggleBtn.addEventListener('click', () => {
+            mobileOverlay.classList.remove('translate-x-full', 'opacity-0', 'invisible');
+            document.body.style.overflow = 'hidden';
+        });
+        closeBtn && closeBtn.addEventListener('click', () => {
+            mobileOverlay.classList.add('translate-x-full', 'opacity-0', 'invisible');
+            document.body.style.overflow = '';
+        });
+        logoutMobile && logoutMobile.addEventListener('click', async () => {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/index.html';
+        });
+        switchSubjectMobile && switchSubjectMobile.addEventListener('click', () => {
+            showSubjectSelectionModal(globalUser.subjects);
+        });
+
+        // Re-highlight active links in mobile nav
+        mobileOverlay.querySelectorAll('nav a').forEach(link => {
+            const linkPath = link.getAttribute('href');
+            if (linkPath === currentPath) {
+                link.classList.add('bg-primary/10', 'text-primary', 'font-bold');
+                link.classList.remove('text-on-surface-variant');
+            }
+        });
+    };
+
+    initMobileNav();
 
     // Profile Dropdown logic
     if (headerActions) {
@@ -283,12 +320,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const displayName = globalUser ? (globalUser.display_name || globalUser.email.split('@')[0]) : 'Student';
         const roleName = globalUser && globalUser.role === 'admin' ? 'Admin' : 'Student';
+        
+        const subjectHexMap = {
+            'Physics': '455f88',
+            'Math': '8a2525',
+            'Biology': '165a3c',
+            'Chemistry': '543884'
+        };
+        const avatarColor = (globalUser && globalUser.activeSubject) ? (subjectHexMap[globalUser.activeSubject] || '455f88') : '455f88';
 
         const profileBtn = document.createElement('div');
         profileBtn.className = "flex items-center gap-3 lg:gap-4 cursor-pointer group p-1 lg:p-2 rounded-full hover:bg-primary/5 transition-all relative";
         profileBtn.innerHTML = `
             <div class="w-10 lg:w-12 h-10 lg:h-12 rounded-full overflow-hidden border-2 border-surface-container-highest shadow-sm group-hover:border-primary/30 transition-all">
-                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=455f88&color=fff" class="w-full h-full object-cover"/>
+                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=${avatarColor}&color=fff" class="w-full h-full object-cover"/>
             </div>
             <div class="hidden sm:flex flex-col text-left">
                 <span class="text-xs font-bold text-on-surface group-hover:text-primary transition-colors">${displayName}</span>
@@ -308,6 +353,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             await fetch('/api/logout', { method: 'POST' });
             window.location.href = '/index.html';
         });
+
+        // --- START: Universal Subject Display & Switching (Header) ---
+        const subjectLabel = document.getElementById('header-subject-label');
+        if (subjectLabel && globalUser && globalUser.activeSubject) {
+            subjectLabel.innerText = `${globalUser.activeSubject} / Edexcel IGCSE Portal`;
+            subjectLabel.classList.remove('opacity-60');
+            subjectLabel.classList.add('opacity-100', 'text-primary'); // Make it pop more
+        }
+
+        // Add Switch Subject Button to Header Actions (Desktop)
+        if (headerActions && globalUser && globalUser.subjects && globalUser.subjects.length > 1) {
+            const switchBtn = document.createElement('button');
+            switchBtn.id = 'header-switch-subject';
+            switchBtn.className = 'hidden lg:flex items-center justify-center w-10 h-10 text-on-surface-variant hover:text-primary hover:bg-primary/5 rounded-full transition-all group relative';
+            switchBtn.innerHTML = `
+                <span class="material-symbols-outlined text-2xl group-hover:rotate-180 transition-transform duration-500">swap_horiz</span>
+                <span class="absolute top-full mt-2 right-0 bg-surface-container-highest text-[0.6rem] font-bold uppercase tracking-widest px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">Switch Subject</span>
+            `;
+            switchBtn.onclick = () => showSubjectSelectionModal(globalUser.subjects);
+            headerActions.prepend(switchBtn);
+        }
+        // --- END: Universal Subject Display & Switching (Header) ---
 
         // Hide non-admin routes if admin
         if (globalUser && globalUser.role === 'admin') {
@@ -375,6 +442,44 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (res.status === 401) { window.location.href = '/index.html'; return; }
         const data = await res.json();
+        window.globalUser = data.user;
+        const user = data.user;
+
+        // --- Subject Selection Logic ---
+        if (user.role === 'student') {
+            const hasMultiple = user.subjects && user.subjects.length > 1;
+            const hasActive = user.activeSubject;
+            
+            if (hasMultiple && !hasActive) {
+                document.body.classList.add('overflow-hidden');
+                document.querySelector('main')?.classList.add('hidden');
+                document.querySelector('aside')?.classList.add('hidden');
+                document.querySelector('header')?.classList.add('hidden');
+                showSubjectSelectionModal(user.subjects);
+                // Make the background opaque
+                const modal = document.getElementById('subject-selection-modal');
+                modal.classList.replace('bg-surface-container-lowest/80', 'bg-surface-container-lowest');
+                modal.classList.replace('backdrop-blur-3xl', 'backdrop-blur-none');
+                return; // Stop init until subject picked
+            }
+        }
+
+        // --- Update Sidebar/Header with Active Subject ---
+        const asideHeader = document.querySelector('aside .px-8');
+        if (asideHeader && user.activeSubject) {
+            // Remove any existing subject label to avoid duplicates on re-init
+            const existingLabel = asideHeader.querySelector('.subject-label');
+            if (existingLabel) existingLabel.remove();
+
+            const labelContainer = document.createElement('div');
+            labelContainer.className = "subject-label mt-2";
+            labelContainer.innerHTML = `
+                <p class="text-[0.65rem] text-primary tracking-[0.2em] font-bold uppercase opacity-80 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[10px]">auto_awesome</span> ${user.activeSubject} Course
+                </p>
+            `;
+            asideHeader.appendChild(labelContainer);
+        }
 
         // 1. Account Greeting & Subtitle Styling
         const greetingHeader = document.getElementById('user-greeting');
@@ -527,6 +632,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const itemsPerPage = 12; // 4x3 grid
         let allPapers = [];
         let currentSort = 'date_desc';
+        let currentSubject = 'all';
 
         const renderGrid = async (sortValue = 'date_desc') => {
             currentSort = sortValue;
@@ -539,8 +645,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </article>
             `).join('');
 
+            const url = (globalUser && globalUser.role === 'admin') 
+                ? `/api/papers?sort=${sortValue}&subject=${currentSubject}`
+                : `/api/papers?sort=${sortValue}`;
+
             const [res] = await Promise.all([
-                fetch(`/api/papers?sort=${sortValue}`),
+                fetch(url),
                 delay(1000)
             ]);
             const data = await res.json();
@@ -644,6 +754,31 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentPage = 1;
             renderGrid(e.target.value);
         });
+
+        // Admin Subject Filter Injection
+        if (globalUser && globalUser.role === 'admin' && headerActions) {
+            const filterContainer = document.createElement('div');
+            filterContainer.className = 'flex items-center gap-2';
+            filterContainer.innerHTML = `
+                <span class="text-[0.6rem] font-bold uppercase tracking-widest opacity-50 hidden sm:inline">Portal:</span>
+                <select id="admin-video-subject-filter" class="bg-surface-container-high border-none rounded-lg text-[0.65rem] font-bold uppercase tracking-wider px-3 py-2 cursor-pointer focus:ring-1 focus:ring-primary/20">
+                    <option value="all">All Subjects</option>
+                    <option value="Physics">Physics</option>
+                    <option value="Math">Math</option>
+                    <option value="Biology">Biology</option>
+                    <option value="Chemistry">Chemistry</option>
+                </select>
+            `;
+            headerActions.prepend(filterContainer);
+            
+            const adminFilter = document.getElementById('admin-video-subject-filter');
+            adminFilter.addEventListener('change', (e) => {
+                currentSubject = e.target.value;
+                currentPage = 1;
+                renderGrid(currentSort);
+            });
+        }
+
         renderGrid();
     }
 
@@ -950,9 +1085,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const studentsList = document.getElementById('admin-students-list');
         const papersList = document.getElementById('admin-papers-list');
         const searchInput = document.getElementById('admin-paper-search');
+        const subjectFilterSelect = document.getElementById('admin-subject-filter');
         
         let allStudents = [];
         let allPapers = [];
+        let currentSubjectFilter = 'all';
         
         // Modal Elements
         const modal = document.getElementById('paper-editor-modal');
@@ -1007,7 +1144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 allPapers = pData.papers || [];
                 
                 renderStudents();
-                renderPapers();
+                renderPapers(searchInput?.value || '', currentSubjectFilter);
                 populateStudentDropdown();
             } catch (e) { console.error(e); }
         };
@@ -1019,30 +1156,50 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             studentsList.innerHTML = allStudents.map(s => {
                 const dateSplit = s.last_active ? new Date(s.last_active).toLocaleString() : 'Never';
+                const subjects = s.subjects ? s.subjects.filter(v => v !== null) : [];
                 return `
-                <div class="flex items-center justify-between p-4 rounded-xl bg-surface hover:bg-surface-container transition-colors border border-surface-container-highest/20 group">
+                <div class="flex items-center justify-between p-4 rounded-xl bg-surface border border-surface-container-highest/20">
                     <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                        <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
                             ${(s.display_name||s.email)[0].toUpperCase()}
                         </div>
                         <div class="flex flex-col">
                             <span class="text-sm font-bold text-on-surface">${s.display_name || s.email.split('@')[0]}</span>
-                            <span class="text-[0.65rem] text-on-surface-variant font-medium tracking-widest uppercase opacity-70">Active: ${dateSplit}</span>
+                            <div class="flex flex-wrap gap-1 mt-1">
+                                ${subjects.map(sub => {
+                                    const count = s.progress_by_subject ? (s.progress_by_subject[sub] || 0) : 0;
+                                    return `<span class="px-2 py-1 bg-surface-container-high text-on-surface rounded flex items-center gap-2 border border-surface-container-highest/50">
+                                        <span class="text-[0.6rem] font-black uppercase tracking-widest text-primary">${sub}</span>
+                                        <span class="w-1 h-1 bg-outline/20 rounded-full"></span>
+                                        <span class="text-[0.6rem] font-bold opacity-80">${count} Papers</span>
+                                    </span>`;
+                                }).join('')}
+                                ${subjects.length === 0 ? '<span class="px-1.5 py-0.5 bg-error/10 text-error rounded text-[0.55rem] font-black uppercase tracking-widest">No Selection</span>' : ''}
+                            </div>
                         </div>
                     </div>
-                    <div class="flex flex-col items-end">
-                        <span class="text-sm font-bold text-primary">${s.completed_papers}</span>
-                        <span class="text-[0.6rem] text-on-surface-variant font-medium tracking-widest uppercase opacity-60">Completed</span>
-                    </div>
+                    <button onclick="showStudentSubjectsModal(${s.id}, '${s.display_name || s.email.split('@')[0]}', ${JSON.stringify(subjects).replace(/"/g, '&quot;')})" class="p-2 hover:bg-surface-container-high rounded-full transition-all text-on-surface-variant flex-shrink-0">
+                        <span class="material-symbols-outlined text-sm">edit_note</span>
+                    </button>
                 </div>
                 `;
             }).join('');
         };
 
-        const renderPapers = (filter = '') => {
-            const filtered = allPapers.filter(p => (p.title + ' ' + p.series).toLowerCase().includes(filter.toLowerCase()));
+        const renderPapers = (search = '', subject = 'all') => {
+            let filtered = allPapers;
+            
+            if (subject !== 'all') {
+                filtered = filtered.filter(p => p.subject === subject);
+            }
+            
+            if (search) {
+                const term = search.toLowerCase();
+                filtered = filtered.filter(p => (p.title + ' ' + (p.series || '') + ' ' + (p.subject || '')).toLowerCase().includes(term));
+            }
+
             if (!filtered.length) {
-                papersList.innerHTML = '<p class="text-xs opacity-50 italic">No exams found.</p>';
+                papersList.innerHTML = '<p class="text-xs opacity-50 italic px-4 py-8 text-center">No exams found matching your criteria.</p>';
                 return;
             }
             papersList.innerHTML = filtered.map(p => `
@@ -1059,8 +1216,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
 
         let populateStudentDropdown = () => {
-            fTarget.innerHTML = '<option value="all">Global (All Students)</option>' + 
-                allStudents.map(s => `<option value="${s.id}">${s.display_name || s.email.split('@')[0]}</option>`).join('');
+            const globalOptions = `
+                <option value="all_Physics">Global (All Physics Students)</option>
+                <option value="all_Math">Global (All Math Students)</option>
+                <option value="all_Biology">Global (All Biology Students)</option>
+                <option value="all_Chemistry">Global (All Chemistry Students)</option>
+            `;
+            let studentOptions = '';
+            for (const s of allStudents) {
+                 const name = s.display_name || s.email.split('@')[0];
+                 const subjects = s.subjects ? s.subjects.filter(v => v !== null) : [];
+                 if (subjects.length > 0) {
+                     for (const sub of subjects) {
+                         studentOptions += `<option value="${s.id}_${sub}">${name} (${sub})</option>`;
+                     }
+                 } else {
+                     studentOptions += `<option value="${s.id}_Physics">${name} (Physics)</option>`;
+                 }
+            }
+            
+            fTarget.innerHTML = globalOptions + studentOptions;
+            
+            const es = document.getElementById('exam-target-student');
+            if (es) {
+                es.innerHTML = globalOptions + studentOptions;
+            }
         };
 
         window.openEditor = (id) => {
@@ -1090,10 +1270,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         cancelBtn.onclick = closeModal;
         
         saveBtn.onclick = async () => {
+            let targetId = fTarget.value;
+            let subject = 'Physics'; // Default
+            
+            if (targetId.includes('_')) {
+                const parts = targetId.split('_');
+                subject = parts[1];
+                targetId = parts[0];
+            }
+
             const payload = {
-                target_student_id: fTarget.value,
+                target_student_id: targetId,
                 insights_header: fReqHeader.value,
-                teacher_insights: fReqContent.value
+                teacher_insights: fReqContent.value,
+                subject: subject
             };
             
             const btnOriginal = saveBtn.innerHTML;
@@ -1135,7 +1325,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="space-y-2 md:col-span-1">
                         <label class="text-[0.65rem] font-bold uppercase tracking-wider text-on-surface-variant">Assign To</label>
                         <select id="exam-target-student" class="w-full bg-surface-container border border-surface-container-highest rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary">
-                            <option value="all">Global (All Students)</option>
+                            <option value="all_Physics">Global (Physics)</option>
                         </select>
                     </div>
                     <div class="space-y-2 md:col-span-1">
@@ -1281,6 +1471,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const method = idInput.value ? 'PUT' : 'POST';
                 const url = idInput.value ? `/api/admin/upcoming-exams/${idInput.value}` : '/api/admin/upcoming-exams';
                 
+                const targetVal = targetInput.value;
+                let subjectVal = 'Physics';
+                let targetId = 'all';
+
+                if (targetVal.includes('_')) {
+                    const parts = targetVal.split('_');
+                    subjectVal = parts[1];
+                    targetId = parts[0];
+                }
+
                 await fetch(url, {
                     method,
                     headers: { 'Content-Type': 'application/json' },
@@ -1288,7 +1488,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         title: titleInput.value,
                         subtitle: subInput.value,
                         exam_date: dateInput.value || null,
-                        target_student_id: targetInput.value
+                        target_student_id: targetId,
+                        subject: subjectVal
                     })
                 });
                 
@@ -1305,20 +1506,118 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         };
 
-        // Redefine populateStudentDropdown to also update this new select menu
-        const ogPopulate = populateStudentDropdown;
-        populateStudentDropdown = () => {
-            ogPopulate();
-            const es = document.getElementById('exam-target-student');
-            if (es) {
-                es.innerHTML = '<option value="all">Global (All Students)</option>' + 
-                    allStudents.map(s => `<option value="${s.id}">${s.display_name || s.email.split('@')[0]}</option>`).join('');
-            }
-        };
+        // Function is now part of the main block and handles both menus
+        populateStudentDropdown();
 
-        searchInput.addEventListener('input', (e) => renderPapers(e.target.value));
+        searchInput.addEventListener('input', (e) => renderPapers(e.target.value, currentSubjectFilter));
+        
+        subjectFilterSelect?.addEventListener('change', (e) => {
+            currentSubjectFilter = e.target.value;
+            renderPapers(searchInput.value, currentSubjectFilter);
+        });
 
         loadData();
         loadExamsList();
+
+        document.getElementById('student-subjects-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('manage-student-id').value;
+            const subjects = Array.from(new FormData(e.target).getAll('subjects'));
+            
+            try {
+                const res = await fetch(`/api/admin/students/${id}/subjects`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ subjects })
+                });
+                if (res.ok) {
+                    window.showAppModal('Success', 'Enrollments updated successfully.');
+                    document.getElementById('student-subjects-modal').classList.add('hidden');
+                    loadData();
+                }
+            } catch (err) { console.error(err); }
+        });
     }
 });
+window.showSubjectSelectionModal = function(subjects) {
+    let modal = document.getElementById('subject-selection-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'subject-selection-modal';
+        modal.className = 'fixed inset-0 z-[200] flex items-center justify-center p-6 bg-surface-container-lowest/80 backdrop-blur-3xl transition-all duration-700';
+        document.body.appendChild(modal);
+    }
+    
+    const subjectIcons = {
+        'Physics': 'bolt',
+        'Math': 'calculate',
+        'Biology': 'genetics',
+        'Chemistry': 'science'
+    };
+
+    const subjectColors = {
+        'Physics': 'from-[#455f88]/20 to-[#455f88]/5',
+        'Math': 'from-[#8a2525]/20 to-[#8a2525]/5',
+        'Biology': 'from-[#165a3c]/20 to-[#165a3c]/5',
+        'Chemistry': 'from-[#543884]/20 to-[#543884]/5'
+    };
+
+    modal.innerHTML = `
+        <div class="max-w-4xl w-full text-center animate-in fade-in zoom-in duration-700">
+            <h1 class="text-4xl lg:text-6xl font-black tracking-tighter text-on-surface mb-2">Welcome Back.</h1>
+            <p class="text-on-surface-variant font-bold uppercase tracking-[0.3em] text-[0.7rem] mb-12 opacity-60">Select your active session</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                ${subjects.map(sub => `
+                    <div onclick="selectActiveSubject('${sub}')" class="group relative bg-surface-container-low border border-surface-container-highest/30 rounded-[2.5rem] p-8 cursor-pointer hover:scale-[1.05] hover:shadow-2xl transition-all duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-br ${subjectColors[sub] || 'from-primary/10 to-primary/5'} opacity-0 group-hover:opacity-100 transition-opacity rounded-[2.5rem]"></div>
+                        <div class="relative z-10 flex flex-col items-center">
+                            <div class="w-20 h-20 rounded-full bg-surface-container-high flex items-center justify-center mb-6 border border-surface-container-highest/20 group-hover:bg-primary/10 transition-colors">
+                                <span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover:text-primary transition-colors">${subjectIcons[sub] || 'school'}</span>
+                            </div>
+                            <h3 class="text-xl font-black text-on-surface mb-1">${sub}</h3>
+                            <p class="text-[0.6rem] font-bold text-on-surface-variant uppercase tracking-widest opacity-50">Active Portal</p>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    
+    document.body.style.overflow = 'hidden';
+};
+
+window.selectActiveSubject = async function(subject) {
+    try {
+        const res = await fetch('/api/select-subject', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subject })
+        });
+        if (res.ok) {
+            window.location.href = 'dashboard.html';
+        }
+    } catch (err) { console.error(err); }
+};
+
+// Admin Student Subject Enrollment Functions
+window.showStudentSubjectsModal = function(id, name, subjects) {
+    const modal = document.getElementById('student-subjects-modal');
+    document.getElementById('manage-student-id').value = id;
+    document.getElementById('student-name-modal').textContent = name;
+    
+    // Check checkboxes
+    const checkboxes = document.querySelectorAll('#student-subjects-form input[type="checkbox"]');
+    checkboxes.forEach(cb => {
+        cb.checked = subjects.includes(cb.value);
+    });
+    
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+};
+
+window.closeStudentSubjectsModal = function() {
+    const modal = document.getElementById('student-subjects-modal');
+    modal.classList.add('hidden');
+    modal.style.display = '';
+};

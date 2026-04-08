@@ -41,6 +41,8 @@ async function requireAuth(req, res, next) {
     jwt.verify(token, SECRET_KEY, (err, decoded) => {
         if (err) return res.status(401).json({ error: "Invalid session" });
         req.user = decoded;
+        // Inject active subject from cookie
+        req.activeSubject = req.cookies.activeSubject;
         next();
     });
 }
@@ -100,17 +102,40 @@ app.post('/api/login', async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(401).json({ error: "Invalid email or password" });
 
+        // Fetch user subjects
+        const subRes = await pool.query('SELECT subject FROM user_subjects WHERE user_id = $1', [user.id]);
+        const subjects = subRes.rows.map(r => r.subject);
+
         const token = jwt.sign({ 
             id: user.id, 
             email: user.email, 
             role: user.role, 
-            display_name: user.display_name 
+            display_name: user.display_name,
+            subjects: subjects
         }, SECRET_KEY, { expiresIn: '8h' });
 
         res.cookie('authToken', token, { httpOnly: true, secure: false, sameSite: 'strict' });
-        res.json({ message: "Login successful!", role: user.role });
+        
+        // Auto-select if only one subject
+        if (subjects.length === 1) {
+            res.cookie('activeSubject', subjects[0], { httpOnly: true, secure: false, sameSite: 'strict' });
+        } else {
+            res.clearCookie('activeSubject');
+        }
+
+        res.json({ message: "Login successful!", role: user.role, subjects: subjects });
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/select-subject', requireAuth, (req, res) => {
+    const { subject } = req.body;
+    if (req.user.subjects.includes(subject)) {
+        res.cookie('activeSubject', subject, { httpOnly: true, secure: false, sameSite: 'strict' });
+        res.json({ success: true });
+    } else {
+        res.status(403).json({ error: "Unauthorized subject selection" });
     }
 });
 
@@ -127,8 +152,11 @@ app.get('/api/papers', requireAuth, async (req, res) => {
         if (sortParam === 'date_asc') {
             orderByClause = 'ORDER BY p.exam_date ASC, p.paper ASC';
         } else if (sortParam === 'history_asc') {
-            orderByClause = 'ORDER BY COALESCE(pr.last_opened, \'9999-12-31\') ASC';
+            orderByClause = "ORDER BY COALESCE(pr.last_opened, '9999-12-31') ASC";
         }
+
+        const subjectParam = req.query.subject || (req.activeSubject || 'Physics');
+        const isAdminAll = (subjectParam === 'all' && (req.user.role === 'admin' || req.user.role === 'instructor'));
 
         const query = `
             SELECT p.*, 
@@ -139,9 +167,10 @@ app.get('/api/papers', requireAuth, async (req, res) => {
             FROM papers p 
             LEFT JOIN progress pr ON p.id = pr.paper_id AND pr.user_id = $1
             LEFT JOIN admin_overrides ao ON p.id = ao.paper_id AND ao.user_id = $1
+            WHERE (p.subject = $2 OR $3 = true)
             ${orderByClause}
         `;
-        const result = await pool.query(query, [req.user.id]);
+        const result = await pool.query(query, [req.user.id, subjectParam, isAdminAll]);
         res.json({ papers: result.rows });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -157,28 +186,35 @@ app.get('/api/dashboard', requireAuth, async (req, res) => {
             SELECT p.title, p.series, pr.watched_seconds, p.duration_seconds, pr.last_opened, p.id 
             FROM progress pr
             JOIN papers p ON pr.paper_id = p.id
-            WHERE pr.user_id = $1
+            WHERE pr.user_id = $1 AND p.subject = $2
             ORDER BY pr.last_opened DESC LIMIT 3
         `;
-        const historyRes = await pool.query(historyQuery, [req.user.id]);
+        const historyRes = await pool.query(historyQuery, [req.user.id, req.activeSubject || 'Physics']);
         const history = historyRes.rows;
 
-        const totalRes = await pool.query('SELECT COUNT(*) as total FROM papers');
-        const compRes = await pool.query('SELECT COUNT(*) as completed FROM progress WHERE user_id = $1 AND watched_seconds > 0', [req.user.id]);
+        const totalRes = await pool.query('SELECT COUNT(*) as total FROM papers WHERE subject = $1', [req.activeSubject || 'Physics']);
+        const compRes = await pool.query(`
+            SELECT COUNT(*) as completed 
+            FROM progress pr
+            JOIN papers p ON pr.paper_id = p.id
+            WHERE pr.user_id = $1 AND p.subject = $2 AND pr.watched_seconds > 0
+        `, [req.user.id, req.activeSubject || 'Physics']);
 
-        // Fetch Global & Targeted Upcoming Exams
+        // Fetch Global & Targeted Upcoming Exams (Filtered by Subject)
         const examsQuery = `
             SELECT id, title, subtitle, exam_date FROM upcoming_exams 
-            WHERE user_id IS NULL OR user_id = $1
+            WHERE (user_id IS NULL OR user_id = $1) AND subject = $2
             ORDER BY exam_date ASC NULLS LAST, created_at ASC
         `;
-        const examsRes = await pool.query(examsQuery, [req.user.id]);
+        const examsRes = await pool.query(examsQuery, [req.user.id, req.activeSubject || 'Physics']);
 
         res.json({ 
             user: { 
                 email: userRow.email, 
                 display_name: userRow.display_name, 
-                role: userRow.role
+                role: userRow.role,
+                subjects: req.user.subjects,
+                activeSubject: req.activeSubject || null
             },
             history, 
             upcomingExams: examsRes.rows,
@@ -196,7 +232,14 @@ app.get('/api/dashboard', requireAuth, async (req, res) => {
 app.get('/api/me', requireAuth, async (req, res) => {
     try {
         const userRes = await pool.query('SELECT id, display_name, email, role FROM users WHERE id = $1', [req.user.id]);
-        res.json(userRes.rows[0]);
+        const user = userRes.rows[0];
+        
+        // Include enrolment info
+        const subRes = await pool.query('SELECT subject FROM user_subjects WHERE user_id = $1', [req.user.id]);
+        user.subjects = subRes.rows.map(r => r.subject);
+        user.activeSubject = req.activeSubject || null;
+        
+        res.json(user);
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -237,14 +280,32 @@ app.post('/api/papers/:id/duration', requireAuth, async (req, res) => {
 app.get('/api/admin/students', requireAdmin, async (req, res) => {
     try {
         const query = `
-            SELECT u.id, u.display_name, u.email,
-                   COUNT(pr.paper_id) as completed_papers,
-                   MAX(pr.last_opened) as last_active
-            FROM users u
-            LEFT JOIN progress pr ON u.id = pr.user_id AND pr.watched_seconds > 0
-            WHERE u.role = 'student'
-            GROUP BY u.id
-            ORDER BY last_active DESC NULLS LAST
+            WITH subject_progress AS (
+                SELECT pr.user_id, p.subject, COUNT(DISTINCT pr.paper_id) as completed_count
+                FROM progress pr
+                JOIN papers p ON pr.paper_id = p.id
+                WHERE pr.watched_seconds > 0
+                GROUP BY pr.user_id, p.subject
+            ),
+            user_basis AS (
+                SELECT u.id, u.display_name, u.email,
+                       ARRAY_AGG(DISTINCT us.subject) as subjects,
+                       COUNT(DISTINCT pr.paper_id) as completed_papers,
+                       MAX(pr.last_opened) as last_active
+                FROM users u
+                LEFT JOIN user_subjects us ON u.id = us.user_id
+                LEFT JOIN progress pr ON u.id = pr.user_id AND pr.watched_seconds > 0
+                WHERE u.role = 'student'
+                GROUP BY u.id
+            )
+            SELECT u.*, 
+                   COALESCE((
+                       SELECT json_object_agg(sp.subject, sp.completed_count)
+                       FROM subject_progress sp
+                       WHERE sp.user_id = u.id
+                   ), '{}'::json) as progress_by_subject
+            FROM user_basis u
+            ORDER BY u.last_active DESC NULLS LAST
         `;
         const result = await pool.query(query);
         res.json({ students: result.rows });
@@ -304,11 +365,12 @@ app.get('/api/admin/upcoming-exams', requireAdmin, async (req, res) => {
 
 app.post('/api/admin/upcoming-exams', requireAdmin, async (req, res) => {
     try {
-        const { title, subtitle, exam_date, target_student_id } = req.body;
+        const { title, subtitle, exam_date, target_student_id, subject } = req.body;
+        const sub = subject || 'Physics';
         if (target_student_id === 'all') {
-            await pool.query('INSERT INTO upcoming_exams (title, subtitle, exam_date) VALUES ($1, $2, $3)', [title, subtitle, exam_date]);
+            await pool.query('INSERT INTO upcoming_exams (title, subtitle, exam_date, subject) VALUES ($1, $2, $3, $4)', [title, subtitle, exam_date, sub]);
         } else {
-            await pool.query('INSERT INTO upcoming_exams (user_id, title, subtitle, exam_date) VALUES ($1, $2, $3, $4)', [target_student_id, title, subtitle, exam_date]);
+            await pool.query('INSERT INTO upcoming_exams (user_id, title, subtitle, exam_date, subject) VALUES ($1, $2, $3, $4, $5)', [target_student_id, title, subtitle, exam_date, sub]);
         }
         res.json({ success: true });
     } catch (err) {
@@ -325,14 +387,31 @@ app.delete('/api/admin/upcoming-exams/:id', requireAdmin, async (req, res) => {
 
 app.put('/api/admin/upcoming-exams/:id', requireAdmin, async (req, res) => {
     try {
-        const { title, subtitle, exam_date, target_student_id } = req.body;
+        const { title, subtitle, exam_date, target_student_id, subject } = req.body;
         const uid = target_student_id === 'all' ? null : target_student_id;
+        const sub = subject || 'Physics';
         await pool.query(
-            'UPDATE upcoming_exams SET title = $1, subtitle = $2, exam_date = $3, user_id = $4 WHERE id = $5',
-            [title, subtitle, exam_date, uid, req.params.id]
+            'UPDATE upcoming_exams SET title = $1, subtitle = $2, exam_date = $3, user_id = $4, subject = $5 WHERE id = $6',
+            [title, subtitle, exam_date, uid, sub, req.params.id]
         );
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Admin Update Student Subjects
+app.post('/api/admin/students/:id/subjects', requireAdmin, async (req, res) => {
+    try {
+        const { subjects } = req.body; // Array of strings
+        const userId = req.params.id;
+        
+        await pool.query('DELETE FROM user_subjects WHERE user_id = $1', [userId]);
+        for (const sub of subjects) {
+            await pool.query('INSERT INTO user_subjects (user_id, subject) VALUES ($1, $2)', [userId, sub]);
+        }
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 

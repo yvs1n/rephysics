@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Atelier - Admin Command Center</title>
+    <title>Elementa | Admin Command Center</title>
+    <link rel="icon" type="image/png" href="logo.png">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
@@ -16,7 +17,7 @@
     <!-- SideNavBar -->
     <aside class="bg-[#f1f4f6] dark:bg-[#1a1f24] font-manrope tracking-tight leading-relaxed h-screen w-64 fixed left-0 top-0 overflow-y-auto z-50 hidden lg:flex flex-col py-12 border-r border-surface-container-highest/20">
         <div class="px-8 mb-12">
-            <h1 class="text-xl font-light tracking-[0.2em] uppercase text-[#2b3437] dark:text-[#f8f9fa]">Atelier</h1>
+            <h1 class="text-xl font-light tracking-[0.2em] uppercase text-[#2b3437] dark:text-[#f8f9fa]">Elementa</h1>
             <p class="text-xs text-on-surface-variant tracking-widest mt-1 opacity-70">Admin Center</p>
         </div>
         <nav class="flex-1 flex flex-col gap-1 px-2">
@@ -59,29 +60,31 @@
                         <span class="material-symbols-outlined text-base">group</span>
                         Student Roster
                     </h3>
-                    <div id="students-list" class="space-y-4">
-                        <!-- Skeleton Loaders for Students -->
-                        <div class="skeleton skeleton-box h-12 w-full rounded-xl"></div>
-                        <div class="skeleton skeleton-box h-12 w-full rounded-xl"></div>
-                        <div class="skeleton skeleton-box h-12 w-full rounded-xl"></div>
+                    <div id="admin-students-list" class="space-y-4">
+                        <div class="skeleton h-12 w-full"></div>
                     </div>
                 </div>
 
-                <!-- Upcoming Exams Card -->
+                <!-- Content Manager Card (Insights Hub) -->
                 <div class="bg-surface-container-low border border-surface-container-highest/30 rounded-3xl p-8 flex flex-col h-full shadow-sm">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-xs uppercase tracking-[0.2em] font-bold text-primary flex items-center gap-2">
-                            <span class="material-symbols-outlined text-base">event</span>
-                            Upcoming Exams
+                            <span class="material-symbols-outlined text-base">import_contacts</span>
+                            Insights Hub
                         </h3>
-                        <button onclick="showExamModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-primary text-on-primary hover:bg-primary-dim transition-colors">
-                            <span class="material-symbols-outlined text-xl">add</span>
-                        </button>
                     </div>
-                    <div id="exams-list" class="space-y-4 flex-1">
-                        <!-- Skeleton Loaders for Exams -->
-                        <div class="skeleton skeleton-box h-12 w-full rounded-xl"></div>
-                        <div class="skeleton skeleton-box h-12 w-full rounded-xl"></div>
+                    <div class="flex gap-3 mb-4">
+                        <select id="admin-subject-filter" class="w-1/3 bg-surface-container border-none focus:ring-1 focus:ring-primary/20 rounded-xl p-3 text-xs cursor-pointer">
+                            <option value="all">All Subjects</option>
+                            <option value="Physics">Physics</option>
+                            <option value="Math">Math</option>
+                            <option value="Biology">Biology</option>
+                            <option value="Chemistry">Chemistry</option>
+                        </select>
+                        <input type="text" id="admin-paper-search" placeholder="Search papers..." class="flex-1 bg-surface-container border-none focus:ring-1 focus:ring-primary/20 rounded-xl p-3 text-xs">
+                    </div>
+                    <div id="admin-papers-list" class="space-y-3 overflow-y-auto max-h-[400px]">
+                        <div class="skeleton h-10 w-full"></div>
                     </div>
                 </div>
             </div>
@@ -89,31 +92,69 @@
         </div>
     </main>
 
-    <!-- Modal for Assigning/Editing Exams -->
-    <div id="exam-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-[#000000]/60 backdrop-blur-sm">
-        <div class="bg-surface-container-lowest w-full max-w-lg rounded-[2rem] shadow-2xl p-8 border border-surface-container-highest/20 overflow-hidden">
-            <h2 id="modal-title" class="text-2xl font-bold tracking-tight text-on-surface mb-2">Assign New Exam</h2>
-            <p class="text-on-surface-variant text-sm mb-8">Schedule a formal assessment or mock paper for your students.</p>
+    <!-- Modal for Teacher Insights (Paper Editor) -->
+    <div id="paper-editor-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-[#000000]/60 backdrop-blur-sm">
+        <div class="bg-surface-container-lowest w-full max-w-lg rounded-[2.5rem] shadow-2xl p-10 border border-surface-container-highest/20 transition-all duration-300 scale-95 opacity-0">
+            <h2 class="text-2xl font-black tracking-tight text-on-surface mb-2">Curate Insights</h2>
+            <p class="text-on-surface-variant font-bold uppercase tracking-widest text-[0.6rem] mb-8 opacity-60">Personalized overrides for this paper</p>
             
-            <form id="exam-form" class="space-y-6">
-                <input type="hidden" id="edit-exam-id">
+            <div class="space-y-6">
+                <input type="hidden" id="editor-paper-id">
                 <div class="space-y-2">
-                    <label class="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-on-surface-variant ml-1">Exam Name / Title</label>
-                    <input type="text" id="exam-title" required class="w-full bg-surface-container border-none focus:ring-2 focus:ring-primary/20 rounded-2xl p-4 text-sm font-medium" placeholder="E.g. IGCSE Physics Mock 2024">
+                    <label class="text-[0.6rem] font-black uppercase tracking-[0.2em] text-on-surface-variant ml-1">Target Audience</label>
+                    <select id="editor-target-student" class="w-full bg-surface-container border-none focus:ring-2 focus:ring-primary/20 rounded-2xl p-4 text-xs font-bold">
+                        <option value="all">Everyone</option>
+                    </select>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <label class="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-on-surface-variant ml-1">Series</label>
-                        <input type="text" id="exam-series" required class="w-full bg-surface-container border-none focus:ring-2 focus:ring-primary/20 rounded-2xl p-4 text-sm font-medium" placeholder="May/June">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-on-surface-variant ml-1">Target Date</label>
-                        <input type="date" id="exam-date" required class="w-full bg-surface-container border-none focus:ring-2 focus:ring-primary/20 rounded-2xl p-4 text-sm font-medium">
-                    </div>
+                <div class="space-y-2">
+                    <label class="text-[0.6rem] font-black uppercase tracking-[0.2em] text-on-surface-variant ml-1">Insight Header</label>
+                    <input type="text" id="editor-insight-header" placeholder="e.g. Focus on Question 4" class="w-full bg-surface-container border-none focus:ring-2 focus:ring-primary/20 rounded-2xl p-4 text-xs font-bold">
                 </div>
+                <div class="space-y-2">
+                    <label class="text-[0.6rem] font-black uppercase tracking-[0.2em] text-on-surface-variant ml-1">Teacher Insights (Markdown)</label>
+                    <textarea id="editor-insight-content" rows="6" placeholder="Add specific guidance or highlight common pitfalls..." class="w-full bg-surface-container border-none focus:ring-2 focus:ring-primary/20 rounded-2xl p-4 text-xs font-bold resize-none"></textarea>
+                </div>
+                
                 <div class="flex gap-4 pt-4">
-                    <button type="button" onclick="closeExamModal()" class="flex-1 py-4 text-sm font-bold text-on-surface-variant hover:bg-surface-container rounded-2xl transition-all">Cancel</button>
-                    <button type="submit" class="flex-1 py-4 text-sm font-bold bg-primary text-on-primary hover:bg-primary-dim rounded-2xl shadow-lg shadow-primary/20 transition-all">Save Assigned Exam</button>
+                    <button id="editor-cancel-btn" class="flex-1 py-4 text-xs font-black uppercase tracking-widest text-on-surface-variant hover:bg-surface-container rounded-2xl transition-all">Discard</button>
+                    <button id="editor-save-btn" class="flex-1 py-4 text-xs font-black uppercase tracking-widest bg-primary text-on-primary hover:bg-primary-dim rounded-2xl shadow-xl shadow-primary/20 transition-all">Apply Insight</button>
+                </div>
+                <button id="editor-close-btn" class="absolute top-8 right-8 text-on-surface-variant hover:text-on-surface transition-colors">
+                    <span class="material-symbols-outlined text-3xl">close</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Managing Student Subjects -->
+    <div id="student-subjects-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-[#000000]/60 backdrop-blur-sm">
+        <div class="bg-surface-container-lowest w-full max-w-md rounded-[2rem] shadow-2xl p-8 border border-surface-container-highest/20">
+            <h2 class="text-2xl font-bold tracking-tight text-on-surface mb-2">Manage Enrollments</h2>
+            <p id="student-name-modal" class="text-primary text-sm font-bold uppercase tracking-widest mb-8">Student Name</p>
+            
+            <form id="student-subjects-form" class="space-y-4">
+                <input type="hidden" id="manage-student-id">
+                <div class="grid grid-cols-1 gap-3">
+                    <label class="flex items-center gap-4 p-4 bg-surface-container rounded-2xl cursor-pointer hover:bg-surface-container-high transition-colors">
+                        <input type="checkbox" name="subjects" value="Physics" class="w-5 h-5 rounded border-none text-primary focus:ring-0">
+                        <span class="text-sm font-bold text-on-surface">Physics</span>
+                    </label>
+                    <label class="flex items-center gap-4 p-4 bg-surface-container rounded-2xl cursor-pointer hover:bg-surface-container-high transition-colors">
+                        <input type="checkbox" name="subjects" value="Math" class="w-5 h-5 rounded border-none text-primary focus:ring-0">
+                        <span class="text-sm font-bold text-on-surface">Math</span>
+                    </label>
+                    <label class="flex items-center gap-4 p-4 bg-surface-container rounded-2xl cursor-pointer hover:bg-surface-container-high transition-colors">
+                        <input type="checkbox" name="subjects" value="Biology" class="w-5 h-5 rounded border-none text-primary focus:ring-0">
+                        <span class="text-sm font-bold text-on-surface">Biology</span>
+                    </label>
+                    <label class="flex items-center gap-4 p-4 bg-surface-container rounded-2xl cursor-pointer hover:bg-surface-container-high transition-colors">
+                        <input type="checkbox" name="subjects" value="Chemistry" class="w-5 h-5 rounded border-none text-primary focus:ring-0">
+                        <span class="text-sm font-bold text-on-surface">Chemistry</span>
+                    </label>
+                </div>
+                <div class="flex gap-4 pt-6">
+                    <button type="button" onclick="closeStudentSubjectsModal()" class="flex-1 py-4 text-sm font-bold text-on-surface-variant hover:bg-surface-container rounded-2xl transition-all">Cancel</button>
+                    <button type="submit" class="flex-1 py-4 text-sm font-bold bg-primary text-on-primary hover:bg-primary-dim rounded-2xl shadow-lg shadow-primary/20 transition-all">Save Changes</button>
                 </div>
             </form>
         </div>

@@ -1,38 +1,116 @@
 <!DOCTYPE html>
 <html class="light" lang="en">
+
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Atelier | Login</title>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Elementa | Portal</title>
+    <link rel="icon" type="image/png" href="logo.png">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
     <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-surface-container-lowest text-on-surface h-screen flex flex-col justify-center items-center">
-    
-    <div class="mb-12 text-center">
-        <h1 class="text-3xl font-light tracking-[0.2em] uppercase text-[#2b3437]">Atelier</h1>
-        <p class="text-xs text-on-surface-variant tracking-widest mt-2 uppercase opacity-70">Physics Portal Access</p>
+
+<body class="bg-surface-container-lowest text-on-surface min-h-screen flex flex-col justify-center items-center py-20 px-6">
+
+    <div class="mb-12 text-center animate-in fade-in slide-in-from-top duration-700">
+        <h1 class="text-5xl font-light tracking-[0.3em] uppercase text-[#2b3437]">Elementa</h1>
+        <p class="text-[0.65rem] text-on-surface-variant font-bold uppercase tracking-[0.4em] mt-3 opacity-60">Bringing learning to your fingertips</p>
     </div>
 
-    <form id="loginForm" class="bg-[#f1f4f6] p-10 rounded-2xl shadow-sm border border-surface-container-highest/20 w-96 flex flex-col gap-6">
-        <div id="errorBox" class="hidden bg-error-container text-on-error-container p-3 rounded-lg text-sm text-center"></div>
+    <form id="loginForm"
+        class="bg-[#f1f4f6] p-10 rounded-2xl shadow-sm border border-surface-container-highest/20 w-96 flex flex-col gap-6">
+        <div id="errorBox" class="hidden bg-error-container text-on-error-container p-3 rounded-lg text-sm text-center">
+        </div>
 
         <div class="flex flex-col gap-2">
             <label class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant">Email</label>
-            <input type="email" id="email" class="rounded-xl border-surface-variant bg-surface p-3 focus:ring-primary focus:border-primary" placeholder="example@gmail.com" required>
+            <input type="email" id="email"
+                class="rounded-xl border-surface-variant bg-surface p-3 focus:ring-primary focus:border-primary"
+                placeholder="__________" required>
         </div>
 
         <div class="flex flex-col gap-2">
             <label class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant">Password</label>
-            <input type="password" id="password" class="rounded-xl border-surface-variant bg-surface p-3 focus:ring-primary focus:border-primary" placeholder="••••••••" required>
+            <input type="password" id="password"
+                class="rounded-xl border-surface-variant bg-surface p-3 focus:ring-primary focus:border-primary"
+                placeholder="__________" required>
         </div>
 
-        <button type="submit" class="mt-4 bg-primary text-on-primary py-4 rounded-xl font-bold uppercase tracking-widest hover:opacity-90 transition-opacity">Login</button>
+        <button type="submit"
+            class="mt-4 bg-primary text-on-primary py-4 rounded-xl font-bold uppercase tracking-widest hover:opacity-90 transition-opacity">Login</button>
     </form>
 
+    <div class="mt-12 max-w-sm text-center space-y-6">
+        <p class="text-xs text-on-surface-variant leading-relaxed opacity-60">
+            Elementa is a specialized revision platform for Edexcel IGCSE students. 
+            Access premium walkthroughs for Physics, Mathematics, Biology, and Chemistry.
+        </p>
+        <button onclick="toggleContactModal(true)" class="text-[0.6rem] font-black uppercase tracking-[0.2em] text-primary hover:underline transition-all">
+            What is Elementa? / Contact Us
+        </button>
+    </div>
+
+    <!-- Contact & Info Modal -->
+    <div id="info-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-[#000000]/40 backdrop-blur-md transition-all duration-500">
+        <div class="bg-surface-container-lowest w-full max-w-xl rounded-[2.5rem] shadow-2xl p-10 border border-surface-container-highest/20 relative animate-in zoom-in duration-300">
+            <button onclick="toggleContactModal(false)" class="absolute top-8 right-8 text-on-surface-variant hover:text-on-surface transition-colors">
+                <span class="material-symbols-outlined text-3xl font-light">close</span>
+            </button>
+
+            <div class="mb-10">
+                <h2 class="text-3xl font-black tracking-tighter text-on-surface mb-2">The Rationale.</h2>
+                <p class="text-on-surface-variant font-bold uppercase tracking-widest text-[0.6rem] opacity-60">Why Elementa?</p>
+            </div>
+
+            <div class="space-y-6 mb-12">
+                <p class="text-sm text-on-surface-variant leading-relaxed">
+                    The name <span class="text-primary font-bold italic">Elementa</span> represents the intersection of the four fundamental scientific pillars we support:
+                </p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-4 bg-surface-container rounded-2xl">
+                        <h4 class="text-[0.6rem] font-black uppercase tracking-widest text-primary mb-1">Chemistry</h4>
+                        <p class="text-[0.7rem] opacity-70">The atomic elements.</p>
+                    </div>
+                    <div class="p-4 bg-surface-container rounded-2xl">
+                        <h4 class="text-[0.6rem] font-black uppercase tracking-widest text-primary mb-1">Physics</h4>
+                        <p class="text-[0.7rem] opacity-70">The elemental forces.</p>
+                    </div>
+                    <div class="p-4 bg-surface-container rounded-2xl">
+                        <h4 class="text-[0.6rem] font-black uppercase tracking-widest text-primary mb-1">Biology</h4>
+                        <p class="text-[0.7rem] opacity-70">The life elements.</p>
+                    </div>
+                    <div class="p-4 bg-surface-container rounded-2xl">
+                        <h4 class="text-[0.6rem] font-black uppercase tracking-widest text-primary mb-1">Mathematics</h4>
+                        <p class="text-[0.7rem] opacity-70">The logical elements.</p>
+                    </div>
+                </div>
+                <p class="text-sm text-on-surface-variant leading-relaxed italic">
+                    By distilling complex concepts into their basic parts, we bring true mastery to your fingertips.
+                </p>
+            </div>
+
+            <div class="pt-8 border-t border-surface-container-highest/20 flex flex-col items-center">
+                <p class="text-xs font-bold text-on-surface mb-4">Want to register or have questions?</p>
+                <a href="mailto:contact@elementa.edu" class="bg-primary text-on-primary px-8 py-3 rounded-full text-[0.65rem] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 transition-transform italic">Contact Administration</a>
+            </div>
+        </div>
+    </div>
+
     <script>
+        function toggleContactModal(show) {
+            const modal = document.getElementById('info-modal');
+            if (show) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const errorBox = document.getElementById('errorBox');
@@ -50,7 +128,7 @@
                     body: JSON.stringify(payload)
                 });
                 const data = await res.json();
-                
+
                 if (res.ok) {
                     window.location.href = '/dashboard.html';
                 } else {
@@ -64,4 +142,5 @@
         });
     </script>
 </body>
+
 </html>

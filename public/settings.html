@@ -3,21 +3,27 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Atelier | Settings</title>
+    <title>Elementa | Settings</title>
+    <link rel="icon" type="image/png" href="logo.png">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script src="script.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-surface-container-lowest text-on-surface h-screen flex flex-col items-center">
+<body class="bg-surface-container-lowest text-on-surface min-h-screen flex flex-col items-center pt-28">
     
     <!-- TopAppBar -->
-    <header class="w-full h-20 bg-surface-container-low flex justify-start items-center px-6 lg:px-12 mb-8 lg:mb-16 shadow-sm border-b border-surface-container-highest/10">
-        <a href="dashboard.html" class="flex items-center gap-3 lg:gap-4 text-on-surface-variant hover:text-primary transition-colors hover:bg-surface-container/50 px-3 lg:px-4 py-2 rounded-xl">
-            <span class="material-symbols-outlined font-bold text-sm lg:text-base">arrow_back</span>
-            <span class="font-bold tracking-widest uppercase text-[0.65rem] lg:text-xs">Back to Dashboard</span>
-        </a>
+    <header class="fixed top-0 right-0 w-full h-20 bg-[#f8f9fa]/80 dark:bg-[#0d1117]/80 backdrop-blur-xl flex justify-between items-center px-6 lg:px-12 z-40 border-b border-surface-container-highest/10">
+        <div class="flex items-center gap-4 lg:gap-8">
+            <span id="header-subject-label" class="font-manrope font-medium text-[0.7rem] lg:text-sm text-[#586064] dark:text-[#abb3b7] opacity-60 uppercase tracking-widest">Account Settings</span>
+            <a href="dashboard.html" class="flex items-center gap-3 lg:gap-4 text-on-surface-variant hover:text-primary transition-colors hover:bg-surface-container/50 px-3 lg:px-4 py-2 rounded-xl">
+                <span class="material-symbols-outlined font-bold text-sm lg:text-base">arrow_back</span>
+                <span class="font-bold tracking-widest uppercase text-[0.65rem] lg:text-xs">Back</span>
+            </a>
+        </div>
+        <div class="flex items-center gap-3 lg:gap-8" id="header-actions">
+        </div>
     </header>
 
     <div class="mb-8 lg:mb-12 text-center px-6">
