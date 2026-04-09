@@ -448,9 +448,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         // --- Subject Selection Logic ---
         if (user.role === 'student') {
             const hasMultiple = user.subjects && user.subjects.length > 1;
+            const hasZero = !user.subjects || user.subjects.length === 0;
             const hasActive = user.activeSubject;
             
-            if (hasMultiple && !hasActive) {
+            if ((hasMultiple || hasZero) && !hasActive) {
                 document.body.classList.add('overflow-hidden');
                 document.querySelector('main')?.classList.add('hidden');
                 document.querySelector('aside')?.classList.add('hidden');
@@ -1721,25 +1722,41 @@ window.showSubjectSelectionModal = function(subjects) {
         'Chemistry': 'from-[#543884]/20 to-[#543884]/5'
     };
 
+    const isEmpty = !subjects || subjects.length === 0;
+    
     modal.innerHTML = `
         <div class="max-w-4xl w-full text-center animate-in fade-in zoom-in duration-700">
-            <h1 class="text-4xl lg:text-6xl font-black tracking-tighter text-on-surface mb-2">Welcome Back.</h1>
-            <p class="text-on-surface-variant font-bold uppercase tracking-[0.3em] text-[0.7rem] mb-12 opacity-60">Select your active session</p>
+            <h1 class="text-4xl lg:text-6xl font-black tracking-tighter text-on-surface mb-2">${isEmpty ? 'Portal Access' : 'Welcome Back.'}</h1>
+            <p class="text-on-surface-variant font-bold uppercase tracking-[0.3em] text-[0.7rem] mb-12 opacity-60">${isEmpty ? 'Verification Pending' : 'Select your active session'}</p>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                ${subjects.map(sub => `
-                    <div onclick="selectActiveSubject('${sub}')" class="group relative bg-surface-container-low border border-surface-container-highest/30 rounded-[2.5rem] p-8 cursor-pointer hover:scale-[1.05] hover:shadow-2xl transition-all duration-500">
-                        <div class="absolute inset-0 bg-gradient-to-br ${subjectColors[sub] || 'from-primary/10 to-primary/5'} opacity-0 group-hover:opacity-100 transition-opacity rounded-[2.5rem]"></div>
-                        <div class="relative z-10 flex flex-col items-center">
-                            <div class="w-20 h-20 rounded-full bg-surface-container-high flex items-center justify-center mb-6 border border-surface-container-highest/20 group-hover:bg-primary/10 transition-colors">
-                                <span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover:text-primary transition-colors">${subjectIcons[sub] || 'school'}</span>
-                            </div>
-                            <h3 class="text-xl font-black text-on-surface mb-1">${sub}</h3>
-                            <p class="text-[0.6rem] font-bold text-on-surface-variant uppercase tracking-widest opacity-50">Active Portal</p>
-                        </div>
+            ${isEmpty ? `
+                <div class="bg-surface-container-low border border-surface-container-highest/30 rounded-[2.5rem] p-12 max-w-lg mx-auto">
+                    <div class="w-20 h-20 rounded-full bg-error/10 flex items-center justify-center mx-auto mb-6 text-error">
+                        <span class="material-symbols-outlined text-4xl">lock_open</span>
                     </div>
-                `).join('')}
-            </div>
+                    <p class="text-on-surface text-lg font-bold leading-relaxed mb-8">
+                        No subjects have been allocated yet, please reach out to the administration and double check.
+                    </p>
+                    <button onclick="fetch('/api/logout', {method:'POST'}).then(()=>window.location.reload())" class="px-8 py-3 bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded-full text-[0.65rem] font-black uppercase tracking-widest transition-all">
+                        Logout of System
+                    </button>
+                </div>
+            ` : `
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    ${subjects.map(sub => `
+                        <div onclick="selectActiveSubject('${sub}')" class="group relative bg-surface-container-low border border-surface-container-highest/30 rounded-[2.5rem] p-8 cursor-pointer hover:scale-[1.05] hover:shadow-2xl transition-all duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-br ${subjectColors[sub] || 'from-primary/10 to-primary/5'} opacity-0 group-hover:opacity-100 transition-opacity rounded-[2.5rem]"></div>
+                            <div class="relative z-10 flex flex-col items-center">
+                                <div class="w-20 h-20 rounded-full bg-surface-container-high flex items-center justify-center mb-6 border border-surface-container-highest/20 group-hover:bg-primary/10 transition-colors">
+                                    <span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover:text-primary transition-colors">${subjectIcons[sub] || 'school'}</span>
+                                </div>
+                                <h3 class="text-xl font-black text-on-surface mb-1">${sub}</h3>
+                                <p class="text-[0.6rem] font-bold text-on-surface-variant uppercase tracking-widest opacity-50">Active Portal</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `}
         </div>
     `;
     
