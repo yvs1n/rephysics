@@ -1149,15 +1149,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                 `).join('');
                 // ------------------------------
 
-                const [sRes, pRes] = await Promise.all([
+                const [sRes, pRes, aRes] = await Promise.all([
                     fetch('/api/admin/students'),
                     fetch('/api/admin/papers'),
+                    fetch('/api/admin/accounts'),
                     adminDelay(1200)
                 ]);
 
                 if (sRes.status === 401 || sRes.status === 403) { window.location.href='/dashboard.html'; return; }
                 const sData = await sRes.json();
+                const aData = await aRes.json();
                 allStudents = sData.students || [];
+                const allAccounts = aData.accounts || [];
+                
+                // Populate Account Targets in Insight Editor
+                fTarget.innerHTML = '<option value="all">Everyone</option>';
+                allStudents.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = s.display_name || s.email;
+                    fTarget.appendChild(opt);
+                });
+
+                renderAccounts(allAccounts);
                 
                 const pData = await pRes.json();
                 allPapers = pData.papers || [];
@@ -1534,6 +1548,132 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentSubjectFilter = e.target.value;
             renderPapers(searchInput.value, currentSubjectFilter);
         });
+
+        // --- Account Management Logic ---
+        const accountsList = document.getElementById('admin-accounts-list');
+        const userModal = document.getElementById('user-editor-modal');
+        const userForm = document.getElementById('user-editor-form');
+
+        window.openUserEditorModal = (user = null) => {
+            const title = document.getElementById('user-modal-title');
+            const fId = document.getElementById('edit-user-id');
+            const fName = document.getElementById('user-display-name');
+            const fEmail = document.getElementById('user-email');
+            const fRole = document.getElementById('user-role');
+            const fPass = document.getElementById('user-password');
+            const hint = document.getElementById('password-hint');
+
+            userForm.reset();
+            if (user) {
+                title.textContent = 'Edit Account';
+                fId.value = user.id;
+                fName.value = user.display_name || '';
+                fEmail.value = user.email;
+                fRole.value = user.role;
+                fPass.placeholder = '••••••••';
+                hint.classList.remove('hidden');
+            } else {
+                title.textContent = 'Create Account';
+                fId.value = '';
+                fName.value = '';
+                fEmail.value = '';
+                fRole.value = 'student';
+                fPass.placeholder = 'Password';
+                hint.classList.add('hidden');
+            }
+
+            userModal.classList.remove('hidden');
+            setTimeout(() => userModal.querySelector('div').classList.add('scale-100', 'opacity-100'), 10);
+        };
+
+        window.closeUserEditorModal = () => {
+            userModal.querySelector('div').classList.remove('scale-100', 'opacity-100');
+            setTimeout(() => userModal.classList.add('hidden'), 300);
+        };
+
+        const renderAccounts = (accounts) => {
+            if (!accountsList) return;
+            accountsList.innerHTML = '';
+            accounts.forEach(acc => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between p-4 bg-surface-container-lowest border border-surface-container-highest/20 rounded-2xl group transition-all hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5';
+                item.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                            ${(acc.display_name || acc.email).charAt(0).toUpperCase()}
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-sm font-bold text-on-surface">${acc.display_name || 'No Name'}</span>
+                            <span class="text-[0.65rem] text-on-surface-variant font-medium opacity-60">${acc.email}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-1 bg-surface-container rounded-lg text-[0.6rem] font-bold uppercase tracking-wider text-on-surface-variant mr-4">${acc.role}</span>
+                        <button class="edit-acc-btn w-8 h-8 rounded-lg text-on-surface-variant hover:bg-primary/10 hover:text-primary transition-all flex items-center justify-center opacity-0 group-hover:opacity-100" data-id="${acc.id}" data-email="${acc.email}" data-role="${acc.role}" data-name="${(acc.display_name || '').replace(/"/g, '&quot;')}">
+                            <span class="material-symbols-outlined text-sm">edit_note</span>
+                        </button>
+                        <button class="del-acc-btn w-8 h-8 rounded-lg text-on-surface-variant hover:bg-error/10 hover:text-error transition-all flex items-center justify-center opacity-0 group-hover:opacity-100" data-id="${acc.id}">
+                            <span class="material-symbols-outlined text-sm">delete</span>
+                        </button>
+                    </div>
+                `;
+                accountsList.appendChild(item);
+            });
+
+            accountsList.querySelectorAll('.edit-acc-btn').forEach(btn => {
+                btn.onclick = (e) => {
+                    const b = e.currentTarget;
+                    const acc = {
+                        id: b.dataset.id,
+                        email: b.dataset.email,
+                        role: b.dataset.role,
+                        display_name: b.dataset.name
+                    };
+                    window.openUserEditorModal(acc);
+                };
+            });
+
+            accountsList.querySelectorAll('.del-acc-btn').forEach(btn => {
+                btn.onclick = async (e) => {
+                    const id = e.currentTarget.dataset.id;
+                    window.showAppModal('Delete Account', 'Are you sure you want to permanently remove this account?', true, async () => {
+                        const res = await fetch(`/api/admin/accounts/${id}`, { method: 'DELETE' });
+                        if (res.ok) loadData();
+                        else {
+                            const data = await res.json();
+                            window.showAppModal('Action Refused', data.error || 'Failed to delete user.');
+                        }
+                    });
+                };
+            });
+        };
+
+        userForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-user-id').value;
+            const payload = {
+                display_name: document.getElementById('user-display-name').value,
+                email: document.getElementById('user-email').value,
+                role: document.getElementById('user-role').value,
+                password: document.getElementById('user-password').value
+            };
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/admin/accounts/${id}` : '/api/admin/accounts';
+
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                closeUserEditorModal();
+                loadData();
+            } else {
+                window.showAppModal('Error', 'Failed to save account details. Check if email is unique.');
+            }
+        };
 
         loadData();
         loadExamsList();

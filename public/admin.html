@@ -65,6 +65,23 @@
                     </div>
                 </div>
 
+                <!-- Account Management Card -->
+                <div class="bg-surface-container-low border border-surface-container-highest/30 rounded-3xl p-8 flex flex-col h-full shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xs uppercase tracking-[0.2em] font-bold text-primary flex items-center gap-2">
+                            <span class="material-symbols-outlined text-base">manage_accounts</span>
+                            User Accounts
+                        </h3>
+                        <button onclick="openUserEditorModal()" class="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary hover:bg-primary/20 transition-all rounded-xl text-[0.6rem] font-black uppercase tracking-widest">
+                            <span class="material-symbols-outlined text-sm">add</span>
+                            New Account
+                        </button>
+                    </div>
+                    <div id="admin-accounts-list" class="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                        <div class="skeleton h-12 w-full"></div>
+                    </div>
+                </div>
+
                 <!-- Content Manager Card (Insights Hub) -->
                 <div class="bg-surface-container-low border border-surface-container-highest/30 rounded-3xl p-8 flex flex-col h-full shadow-sm">
                     <div class="flex justify-between items-center mb-6">
@@ -157,6 +174,48 @@
                     <button type="submit" class="flex-1 py-4 text-sm font-bold bg-primary text-on-primary hover:bg-primary-dim rounded-2xl shadow-lg shadow-primary/20 transition-all">Save Changes</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal for Account Editor -->
+    <div id="user-editor-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-[#000000]/60 backdrop-blur-sm">
+        <div class="bg-surface-container-lowest w-full max-w-lg rounded-[2.5rem] shadow-2xl p-10 border border-surface-container-highest/20">
+            <h2 id="user-modal-title" class="text-2xl font-black tracking-tight text-on-surface mb-2">Create Account</h2>
+            <p class="text-on-surface-variant font-bold uppercase tracking-widest text-[0.6rem] mb-8 opacity-60">System access configuration</p>
+            
+            <form id="user-editor-form" class="space-y-6">
+                <input type="hidden" id="edit-user-id">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <label class="text-[0.6rem] font-black uppercase tracking-[0.2em] text-on-surface-variant ml-1">Display Name</label>
+                        <input type="text" id="user-display-name" required placeholder="Full Name" class="w-full bg-surface-container border-none focus:ring-2 focus:ring-primary/20 rounded-2xl p-4 text-xs font-bold">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[0.6rem] font-black uppercase tracking-[0.2em] text-on-surface-variant ml-1">Access Role</label>
+                        <select id="user-role" class="w-full bg-surface-container border-none focus:ring-2 focus:ring-primary/20 rounded-2xl p-4 text-xs font-bold">
+                            <option value="student">Student</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[0.6rem] font-black uppercase tracking-[0.2em] text-on-surface-variant ml-1">Email Address</label>
+                    <input type="email" id="user-email" required placeholder="email@example.com" class="w-full bg-surface-container border-none focus:ring-2 focus:ring-primary/20 rounded-2xl p-4 text-xs font-bold">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[0.6rem] font-black uppercase tracking-[0.2em] text-on-surface-variant ml-1">Password</label>
+                    <input type="password" id="user-password" placeholder="••••••••" class="w-full bg-surface-container border-none focus:ring-2 focus:ring-primary/20 rounded-2xl p-4 text-xs font-bold">
+                    <p id="password-hint" class="text-[0.55rem] text-on-surface-variant opacity-40 ml-1">Leave blank to keep current password if editing.</p>
+                </div>
+                
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="closeUserEditorModal()" class="flex-1 py-4 text-xs font-black uppercase tracking-widest text-on-surface-variant hover:bg-surface-container rounded-2xl transition-all">Cancel</button>
+                    <button type="submit" class="flex-1 py-4 text-xs font-black uppercase tracking-widest bg-primary text-on-primary hover:bg-primary-dim rounded-2xl shadow-xl shadow-primary/20 transition-all">Save Account</button>
+                </div>
+            </form>
+            <button onclick="closeUserEditorModal()" class="absolute top-8 right-8 text-on-surface-variant hover:text-on-surface transition-colors">
+                <span class="material-symbols-outlined text-3xl">close</span>
+            </button>
         </div>
     </div>
 

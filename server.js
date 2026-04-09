@@ -276,6 +276,57 @@ app.post('/api/papers/:id/duration', requireAuth, async (req, res) => {
     }
 });
 
+// --- Account Management API ---
+app.get('/api/admin/accounts', requireAdmin, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT id, email, role, display_name FROM users ORDER BY id ASC');
+        res.json({ accounts: result.rows });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/admin/accounts', requireAdmin, async (req, res) => {
+    try {
+        const { email, password, role, display_name } = req.body;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await pool.query(
+            'INSERT INTO users (email, password, role, display_name) VALUES ($1, $2, $3, $4)',
+            [email, hashedPassword, role || 'student', display_name]
+        );
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.put('/api/admin/accounts/:id', requireAdmin, async (req, res) => {
+    try {
+        const userId = parseInt(req.params.id);
+        const { email, role, display_name, password } = req.body;
+        
+        let query = 'UPDATE users SET email = $1, role = $2, display_name = $3';
+        let params = [email, role, display_name, userId];
+        
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            query += ', password = $5';
+            params.push(hashedPassword);
+        }
+        
+        query += ' WHERE id = $4';
+        const result = await pool.query(query, params);
+        res.json({ success: result.rowCount > 0 });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete('/api/admin/accounts/:id', requireAdmin, async (req, res) => {
+    try {
+        const userId = parseInt(req.params.id);
+        // Prevent self-deletion
+        if (userId === req.user.id) return res.status(403).json({ error: "Cannot delete your own account" });
+        
+        const result = await pool.query('DELETE FROM users WHERE id = $1', [userId]);
+        res.json({ success: result.rowCount > 0 });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // Admin Students List
 app.get('/api/admin/students', requireAdmin, async (req, res) => {
     try {
