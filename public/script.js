@@ -1140,11 +1140,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                 `).join('');
                 
-                papersList.innerHTML = Array(4).fill(`
+                papersList.innerHTML = Array(6).fill(`
                     <div class="flex items-center justify-between p-4 rounded-xl border border-surface-container-highest/20 group">
-                        <div class="flex flex-col gap-2 w-48">
-                            <div class="skeleton skeleton-box h-4 w-full"></div>
-                            <div class="skeleton skeleton-box h-2 w-1/2"></div>
+                        <div class="flex flex-col gap-2 w-full">
+                            <div class="skeleton skeleton-box h-4 w-3/4"></div>
+                            <div class="skeleton skeleton-box h-2 w-1/4"></div>
                         </div>
                     </div>
                 `).join('');
