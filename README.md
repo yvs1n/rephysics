@@ -1,52 +1,62 @@
-# rephysics ⚛️
+# Elementa ⚛️
 
-A premium, modern educational platform for Edexcel IGCSE Physics students. Featuring account-linked progress tracking, video-based learning, and a comprehensive past paper library.
+**Elementa** is a premium, high-fidelity educational platform designed for Edexcel IGCSE students. It transforms the learning experience through intelligent progress tracking, high-definition video walkthroughs, and a centralized hub for past paper mastery.
 
-![Project Status](https://img.shields.io/badge/Status-In--Development-blue)
-![Tech Stack](https://img.shields.io/badge/Stack-Node.js%20%7C%20SQLite%20%7C%20Vanilla%20JS-success)
+![Project Status](https://img.shields.io/badge/Status-Production--Ready-success)
+![Tech Stack](https://img.shields.io/badge/Stack-Node.js%20%7C%20PostgreSQL%20%7C%20Vanilla%20JS-blue)
+![Hosting](https://img.shields.io/badge/Hosting-Render%20%7C%20Neon-orange)
 
-## ✨ Features
+## ✨ Core Features
 
-- **Personalized Dashboard**: Real-time "Watch Progress" and account-linked greetings.
-- **Video Library**: Intelligent duration loading and progress saving.
-- **Past Paper Vault**: Organized repository of Question Papers and Marking Schemes.
-- **Premium UI**: Dark-mode optimized, glassmorphism design with a full-screen mobile navigation system.
-- **Account Sync**: History and progress are stored securely on the server.
+### 🎓 Student Experience
+- **Personalized Dashboard**: Real-time progress synchronization with "Recently Watched" and "Next Up" intelligent suggestions.
+- **Multi-Subject Ecosystem**: Native support for **Physics, Math, Biology, and Chemistry** with custom-tailored resource pipelines.
+- **Intelligent Video Library**: Automatic duration detection, playback memory, and integrated teacher insights.
+- **Vault Access**: A comprehensive repository of Past Papers, Marking Schemes, and Model Answers.
+
+### 🛡️ Admin Command Center
+- **Accounts Hub**: Full CRUD suite for managing student and administrative accounts with secure password hashing.
+- **Insights Hub**: A dual-column, high-density dashboard for content management and assignment oversight.
+- **Protected Operations**: Level-based access control (RBAC) ensuring administrative tools are secured via server-side middleware.
+
+### 🍱 Premium UI/UX
+- **Modern Aesthetic**: Glassmorphism-inspired design with a focus on dark-mode legibility and smooth transitions.
+- **Responsive Navigation**: A robust mobile navigation system optimized for high-performance learning on any device.
+- **SEO Ready**: Custom metadata and Open Graph tags for optimized search visibility and professional social sharing.
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: Vanilla JavaScript, Tailwind CSS (CDN), Material Symbols.
-- **Backend**: Node.js, Express.
-- **Database**: SQLite3 (with persistence optimized for production).
-- **Authentication**: JWT (JSON Web Tokens) with Secure HTTP-Only Cookies.
+- **Frontend**: Vanilla JavaScript (ES6+), Tailwind CSS (Grid-optimized), Material Symbols.
+- **Backend**: Node.js, Express.js.
+- **Database**: **PostgreSQL (Neon)** for robust, scalable relational data persistence.
+- **Security**: JWT (JSON Web Tokens) with Secure, HttpOnly cookie management and `bcryptjs` hashing.
 
-## 🚀 Local Setup
+## 🚀 Local Deployment
 
-1. **Clone the repository**:
+1. **Clone & Install**:
    ```bash
-   git clone https://github.com/yvs1n/rephysics.git
-   cd rephysics
-   ```
-
-2. **Install dependencies**:
-   ```bash
+   git clone https://github.com/yvs1n/elementa.git
+   cd elementa
    npm install
    ```
 
-3. **Initialize the Database**:
+2. **Environment Configuration**:
+   Create a `.env` file in the root with:
+   ```env
+   DATABASE_URL=your_postgresql_url
+   JWT_SECRET=your_secure_secret
+   PORT=3000
+   ```
+
+3. **Initialize Ecosystem**:
    ```bash
    node setupDB.js
    ```
 
-4. **Start the Server**:
+4. **Launch Platform**:
    ```bash
    npm start
    ```
-   *Access the site at `http://localhost:3000`*
-
-## 📦 Deployment
-
-Optimized for deployment on **Railway.app** or **Render.com** using Persistent Volumes for the SQLite database.
 
 ---
-*Created with ❤️ by [Yassin Ragab](https://yassinr.me)*
+*Developed with excellence by [Yassin Ragab](https://yassinr.me)*
